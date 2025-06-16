@@ -34,3 +34,6 @@
 .vscode
 main
 metrics.log
+runTests
+periodic_logger.log
+standard_logger.log

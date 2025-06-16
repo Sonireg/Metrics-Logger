@@ -10,7 +10,7 @@ class PeriodicLogger : public MetricsLogger {
     std::atomic<std::chrono::seconds> interval_{std::chrono::seconds(1)};
 
 public:
-    explicit PeriodicLogger(const std::string& filename) : MetricsLogger(filename) {}
+    explicit PeriodicLogger(std::ostream& outputStream) : MetricsLogger(outputStream) {}
 
     void start(std::chrono::seconds interval) {
         if (isRunning_) return;

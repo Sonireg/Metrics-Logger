@@ -29,7 +29,7 @@ class MetricsLogger : public MetricsCollector {
     std::condition_variable queueCondition_;
     bool isStopped_ = false;
     std::queue<std::vector<std::pair<std::string, std::string>>> metricsQueue_;
-    std::ofstream logFile_;
+    std::ostream& logStream_;
 
     void loggingFunc() {
         while (true) {
@@ -42,20 +42,19 @@ class MetricsLogger : public MetricsCollector {
                 metricsQueue_.pop();
             }
             if (!metricsBatch.empty()) {
-                logFile_ << getCurrentTimestamp();
+                logStream_ << getCurrentTimestamp();
                 for (const auto& [metricName, metricValue] : metricsBatch) {
-                    logFile_ << " \"" << metricName << "\" " << metricValue;
+                    logStream_ << " \"" << metricName << "\" " << metricValue;
                 }
-                logFile_ << std::endl;
+                logStream_ << std::endl;
             }
         }
     }
 
 public:
-    MetricsLogger(const std::string& filename)
-        : logFile_(filename, std::ios::out | std::ios::app)
+    MetricsLogger(std::ostream& outputStream)
+        : logStream_(outputStream)
     {
-        if (!logFile_) throw std::runtime_error("Cannot open file " + filename);
         loggingThread_ = std::thread(&MetricsLogger::loggingFunc, this);
     }
 
@@ -66,7 +65,6 @@ public:
         }
         queueCondition_.notify_all();
         if (loggingThread_.joinable()) loggingThread_.join();
-        logFile_.close();
     }
 
     void requestFlush() {
